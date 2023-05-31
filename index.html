@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hourly Rate Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        input[type="text"] {
+            width: 50px;
+            padding: 5px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Hourly Rate Timer</h1>
+    <form id="timerForm">
+        <p>Hourly rate: $<input type="text" id="hourlyRate" value="10"></p>
+        <p>Amount gained: $<span id="amountGained">0.00</span></p>
+        <p>Stopwatch: <span id="stopwatch">00:00:00</span></p>
+        <button type="submit" id="startBtn">Start</button>
+        <button type="button" id="pauseBtn" disabled>Pause</button>
+        <button type="button" id="resumeBtn" disabled>Resume</button>
+        <button type="button" id="resetBtn" disabled>Reset</button>
+    </form>
+
+    <script>
+        var hourlyRateInput = document.getElementById("hourlyRate");
+        var amountGainedSpan = document.getElementById("amountGained");
+        var stopwatchSpan = document.getElementById("stopwatch");
+        var startBtn = document.getElementById("startBtn");
+        var pauseBtn = document.getElementById("pauseBtn");
+        var resumeBtn = document.getElementById("resumeBtn");
+        var resetBtn = document.getElementById("resetBtn");
+        var timerInterval;
+        var hours = 0, minutes = 0, seconds = 0;
+        var amountGained = 0;
+        var isPaused = false;
+
+        function toggleButtonsState(start, pause, resume, reset) {
+            startBtn.disabled = start;
+            pauseBtn.disabled = pause;
+            resumeBtn.disabled = resume;
+            resetBtn.disabled = reset;
+        }
+
+        document.getElementById("timerForm").addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent form submission
+
+            if (startBtn.disabled) {
+                return; // Return if the timer is already running
+            }
+
+            // Reset the stopwatch variables and amount gained
+            hours = 0;
+            minutes = 0;
+            seconds = 0;
+            amountGained = 0;
+
+            amountGainedSpan.textContent = amountGained.toFixed(2);
+            stopwatchSpan.textContent = "00:00:00";
+
+            toggleButtonsState(true, false, true, true);
+            hourlyRateInput.disabled = true;
+            isPaused = false;
+
+            timerInterval = setInterval(function () {
+                if (!isPaused) {
+                    var hourlyRate = parseFloat(hourlyRateInput.value);
+                    amountGained += (hourlyRate / 3600); // Increment amount gained per second
+                    amountGainedSpan.textContent = amountGained.toFixed(2);
+
+                    // Increment the stopwatch
+                    seconds++;
+                    if (seconds >= 60) {
+                        seconds = 0;
+                        minutes++;
+                        if (minutes >= 60) {
+                            minutes = 0;
+                            hours++;
+                        }
+                    }
+
+                    // Display the stopwatch
+                    var stopwatchText = pad(hours) + ":" + pad(minutes) + ":" + pad(seconds);
+                    stopwatchSpan.textContent = stopwatchText;
+                }
+            }, 1000);
+        });
+
+        pauseBtn.addEventListener("click", function () {
+            isPaused = true;
+            toggleButtonsState(true, true, false, false);
+        });
+
+        resumeBtn.addEventListener("click", function () {
+            isPaused = false;
+            toggleButtonsState(true, false, true, true);
+        });
+
+        resetBtn.addEventListener("click", function () {
+            clearInterval(timerInterval);
+            toggleButtonsState(false, true, true, true);
+            hourlyRateInput.disabled = false;
+            amountGainedSpan.textContent = "0.00";
+            stopwatchSpan.textContent = "00:00:00";
+        });
+
+        // Function to pad single digits with leading zero
+        function pad(num) {
+            return (num < 10 ? "0" + num : num);
+        }
+    </script>
+</body>
+
+</html>
